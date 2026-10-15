@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>QuizCode — الامتحان</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- حالة التحميل أو الخطأ -->
+  <main id="status-screen" class="container">
+    <div id="status-msg" class="spinner-page">جارٍ التحميل…</div>
+    <div id="status-actions" class="center" hidden><a class="btn btn-secondary" href="index.html">العودة للصفحة الرئيسية</a></div>
+  </main>
+  
+  <!-- قبل البدء: الاسم وكود الطالب -->
+  <section id="start-screen" hidden>
+    <header class="topbar">
+      <div class="container"><a class="brand" href="index.html">QuizCode</a></div>
+    </header>
+    <main class="container">
+      <form id="start-form" class="card" novalidate>
+        <h1 id="exam-title"></h1>
+        <p id="exam-desc" class="muted"></p>
+        <p id="exam-meta" class="small muted"></p>
+        <div id="exam-instructions" class="alert alert-info" hidden></div>
+        <div id="start-msg" class="alert" role="alert" hidden></div>
+        <div class="field">
+          <label for="student-name">الاسم</label>
+          <input id="student-name" type="text" maxlength="60" autocomplete="name" required>
+        </div>
+        <div class="field" id="code-field" hidden>
+          <label for="student-code">كود الطالب</label>
+          <input id="student-code" type="text" maxlength="40" autocomplete="off" class="ltr">
+        </div>
+        <p class="hint mb">بمجرد الضغط على «ابدأ الامتحان» يبدأ احتساب الوقت ولا يتوقف.</p>
+        <button id="start-btn" class="btn btn-primary btn-block" type="submit">ابدأ الامتحان</button>
+      </form>
+    </main>
+  </section>
+  
+  <!-- أثناء الامتحان -->
+  <section id="exam-screen" hidden>
+    <div class="exam-bar">
+      <div class="container">
+        <span id="counter" class="badge badge-info"></span>
+        <span id="save-state" class="small muted"></span>
+        <span id="timer" class="timer" aria-live="off">--:--</span>
+      </div>
+      <div class="progress"><span id="progress-bar"></span></div>
+    </div>
+    <main class="container">
+      <div id="exam-msg" class="alert" role="alert" hidden></div>
+      <div id="q-box" class="card"></div>
+    </main>
+    <nav class="exam-nav">
+      <div class="container">
+        <button id="prev-btn" class="btn btn-secondary" type="button">السابق</button>
+        <button id="next-btn" class="btn btn-primary" type="button">التالي</button>
+        <button id="submit-btn" class="btn btn-primary" type="button" hidden>تسليم الامتحان</button>
+      </div>
+    </nav>
+  </section>
+  
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/exam.js"></script>
+</body>
+
+</html>

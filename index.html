@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>QuizCode — الدخول إلى الامتحان</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container"><span class="brand">QuizCode</span></div>
+  </header>
+  
+  <main class="container">
+    <section class="hero">
+      <div class="logo">QuizCode</div>
+      <p class="muted">اكتب كود الامتحان الذي أعطاك إياه المسؤول لتبدأ.</p>
+    </section>
+    
+    <form id="enter-form" class="card" novalidate>
+      <div id="msg" class="alert" role="alert" hidden></div>
+      <div class="field">
+        <label for="code">كود الامتحان</label>
+        <input id="code" class="code-input" type="text" inputmode="latin" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="24" required>
+      </div>
+      <button id="enter-btn" class="btn btn-primary btn-block" type="submit">دخول</button>
+    </form>
+    
+    <p class="muted small center"></p>
+  </main>
+  
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/index.js"></script>
+</body>
+
+</html>

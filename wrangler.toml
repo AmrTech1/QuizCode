@@ -1,0 +1,27 @@
+# إعدادات Cloudflare Worker لمشروع QuizCode
+# لا تضع هنا أي أسرار. الأسرار تُضاف عبر: npx wrangler secret put <NAME>
+  name = "quizcode-api"
+  main = "worker/index.js"
+  compatibility_date = "2025-06-01"
+  
+  # أنشئ الـ KV بالأمر: npx wrangler kv namespace create QUIZ_KV
+  # ثم ضع المعرّف (id) الناتج هنا بدل القيمة التجريبية.
+  [[kv_namespaces]]
+  binding = "QUIZ_KV"
+  id = "REPLACE_WITH_KV_NAMESPACE_ID"
+  
+  [vars]
+  # المواقع المسموح لها باستدعاء الـ API (بدون / في النهاية). افصل بينها بفاصلة.
+  # مثال لـ GitHub Pages: https://USERNAME.github.io
+  ALLOWED_ORIGINS = "https://USERNAME.github.io,http://localhost:8080"
+  # عدد دورات PBKDF2 (الحد الأقصى المسموح في Workers هو 100000)
+  PBKDF2_ITERATIONS = "100000"
+  # مدة الجلسة الإدارية بالساعات
+  SESSION_HOURS = "8"
+  # المنطقة الزمنية المستخدمة في إشعارات Telegram، مثل Africa/Cairo أو Asia/Riyadh
+  TIME_ZONE = "UTC"
+  
+  # الأسرار (لا تكتبها هنا):
+  # SETUP_TOKEN رمز تهيئة/إعادة ضبط كلمة مرور الإدارة
+  # TG_TOKEN توكن بوت Telegram (اختياري)
+  # TG_CHAT معرّف المحادثة في Telegram (اختياري)

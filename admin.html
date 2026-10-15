@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>QuizCode — لوحة الإدارة</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container wide">
+      <span class="brand">QuizCode — الإدارة</span>
+      <nav id="nav" hidden>
+        <button type="button" class="btn btn-ghost" data-act="nav-exams">الامتحانات</button>
+        <button type="button" class="btn btn-ghost" data-act="nav-settings">الإعدادات</button>
+        <button type="button" class="btn btn-ghost" data-act="logout">تسجيل الخروج</button>
+      </nav>
+    </div>
+  </header>
+  <main id="app" class="container wide">
+    <div class="spinner-page">جارٍ التحميل…</div>
+  </main>
+  
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+
+</html>
