@@ -3,7 +3,7 @@
  *
  * الأسرار (Worker Secrets): SETUP_TOKEN، TG_TOKEN (اختياري)، TG_CHAT (اختياري)
  * المتغيرات (wrangler.toml): ALLOWED_ORIGINS، PBKDF2_ITERATIONS، SESSION_HOURS، TIME_ZONE
- * ربط KV: QUIZ_KV
+ * ربط KV: QUIZCODE_KV
  *
  * تخطيط مفاتيح KV:
  *   admin:cred                 بيانات كلمة مرور الإدارة (ملح + هاش PBKDF2 + epoch)
@@ -256,13 +256,13 @@ function normalizeExam(inp, base) {
 
 /* ───────────── KV ───────────── */
 
-const kvGet = (env, key) => env.QUIZ_KV.get(key, 'json');
-const kvPut = (env, key, val, opts = {}) => env.QUIZ_KV.put(key, JSON.stringify(val), opts);
+const kvGet = (env, key) => env.QUIZCODE_KV.get(key, 'json');
+const kvPut = (env, key, val, opts = {}) => env.QUIZCODE_KV.put(key, JSON.stringify(val), opts);
 async function kvList(env, prefix, cap = 3000) {
   const out = [];
   let cursor;
   do {
-    const r = await env.QUIZ_KV.list({ prefix, cursor, limit: Math.min(1000, cap) });
+    const r = await env.QUIZCODE_KV.list({ prefix, cursor, limit: Math.min(1000, cap) });
     out.push(...r.keys);
     cursor = r.list_complete ? undefined : r.cursor;
   } while (cursor && out.length < cap);
@@ -370,7 +370,7 @@ async function rlFail(env, st) {
   const rec = fresh ? { count: 1, first: st.now } : { count: st.rec.count + 1, first: st.rec.first };
   await kvPut(env, st.key, rec, { expirationTtl: Math.max(60, Math.ceil((rec.first + st.windowSec * 1000 - st.now) / 1000)) });
 }
-const rlClear = async (env, st) => { if (st.rec) await env.QUIZ_KV.delete(st.key); };
+const rlClear = async (env, st) => { if (st.rec) await env.QUIZCODE_KV.delete(st.key); };
 
 async function requireAdmin(request, env, now) {
   const m = /^Bearer ([a-f0-9]{64})$/.exec(request.headers.get('Authorization') || '');
@@ -741,7 +741,7 @@ async function adminLogin(c) {
 }
 
 async function adminLogout(c) {
-  await c.env.QUIZ_KV.delete(c.admin.sessionKey);
+  await c.env.QUIZCODE_KV.delete(c.admin.sessionKey);
   return { ok: true };
 }
 
@@ -778,12 +778,12 @@ async function adminSaveExam(c) {
   const owner = await kvGet(c.env, `code:${exam.code}`);
   if (owner && owner.examId !== exam.id) fail(409, 'CODE_TAKEN', 'هذا الكود مستخدم في امتحان آخر');
   if (existing && JSON.stringify(existing.questions) !== JSON.stringify(exam.questions)) {
-    const has = await c.env.QUIZ_KV.list({ prefix: `att:${exam.id}:`, limit: 1 });
+    const has = await c.env.QUIZCODE_KV.list({ prefix: `att:${exam.id}:`, limit: 1 });
     if (has.keys.length) fail(409, 'EXAM_HAS_ATTEMPTS', 'لا يمكن تعديل الأسئلة بعد وجود محاولات. انسخ الامتحان لإنشاء نسخة جديدة.');
   }
   await putExam(c.env, exam);
   await kvPut(c.env, `code:${exam.code}`, { examId: exam.id });
-  if (existing && existing.code !== exam.code) await c.env.QUIZ_KV.delete(`code:${existing.code}`);
+  if (existing && existing.code !== exam.code) await c.env.QUIZCODE_KV.delete(`code:${existing.code}`);
   return { ok: true, exam };
 }
 
@@ -814,11 +814,11 @@ async function adminToggleExam(c) {
 async function adminDeleteExam(c) {
   const exam = await getExam(c.env, c.body.id);
   const atts = await kvList(c.env, `att:${exam.id}:`, 500);
-  for (const k of atts) await c.env.QUIZ_KV.delete(k.name);
+  for (const k of atts) await c.env.QUIZCODE_KV.delete(k.name);
   if (atts.length >= 500) return { ok: true, complete: false }; // كرّر الحذف لإكمال الباقي
-  for (const k of await kvList(c.env, `ident:${exam.id}:`, 1000)) await c.env.QUIZ_KV.delete(k.name);
-  await c.env.QUIZ_KV.delete(`exam:${exam.id}`);
-  await c.env.QUIZ_KV.delete(`code:${exam.code}`);
+  for (const k of await kvList(c.env, `ident:${exam.id}:`, 1000)) await c.env.QUIZCODE_KV.delete(k.name);
+  await c.env.QUIZCODE_KV.delete(`exam:${exam.id}`);
+  await c.env.QUIZCODE_KV.delete(`code:${exam.code}`);
   return { ok: true, complete: true };
 }
 
@@ -988,7 +988,7 @@ async function handle(request, env, ctx) {
     return new Response(null, { status: 204, headers: corsHeaders(request, env) });
   }
   if (origin && !isAllowedOrigin(origin, env)) fail(403, 'ORIGIN_NOT_ALLOWED', 'هذا الموقع غير مسموح له بالاتصال بالخادم');
-  if (!env.QUIZ_KV) fail(500, 'KV_NOT_BOUND', 'إعداد KV غير مكتمل على الخادم');
+  if (!env.QUIZCODE_KV) fail(500, 'KV_NOT_BOUND', 'إعداد KV غير مكتمل على الخادم');
   const url = new URL(request.url);
   const route = ROUTES[`${request.method} ${url.pathname.replace(/\/+$/, '')}`];
   if (!route) fail(404, 'NOT_FOUND', 'المسار غير موجود');
