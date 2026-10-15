@@ -449,14 +449,22 @@ function isVisible(exam, s) {
 
 function seededShuffle(arr, seed) {
   let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i);
-    h = Math.imul(h, 16777619); }
-  const rnd = () => { h += 0x6d2b79f5; let t = h;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const rnd = () => {
+    h += 0x6d2b79f5;
+    let t = h;
     t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
   const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]]; }
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
   if (a.length > 1 && a.every((x, i) => x.id === arr[i].id)) a.push(a.shift());
   return a;
 }
@@ -465,7 +473,9 @@ function publicQuestion(q, seed) {
   const kind = kindOf(q);
   const out = { id: q.id, type: q.type, kind, text: q.text, points: q.points };
   if (q.imageUrl) out.imageUrl = q.imageUrl;
-  if (kind === 'single' || kind === 'multi') out.options = q.options;
+  if (kind === 'single' || kind === 'multi') {
+    out.options = seededShuffle(q.options, seed + q.id + ':options');
+  }
   if (kind === 'order') out.items = seededShuffle(q.items, seed + q.id);
   if (kind === 'fill') out.blanksCount = q.blanks.length;
   return out;
@@ -499,8 +509,10 @@ function buildReview(exam, a, forAdmin) {
       status: it.status,
       note: it.note || '',
     };
-    if (forAdmin || exam.showReview) { row.correct = correctOf(q);
-      row.explanation = q.explanation || ''; }
+    if (forAdmin || exam.showReview) {
+      row.correct = correctOf(q);
+      row.explanation = q.explanation || '';
+    }
     return row;
   });
 }
@@ -612,7 +624,7 @@ const publicExamInfo = (e) => ({ id: e.id, title: e.title, description: e.descri
 function attemptView(exam, a, now) {
   const base = { examId: exam.id, attemptId: a.id, status: a.status, name: a.name, studentCode: a.studentCode || '', startedAt: a.startedAt, deadline: a.deadline, serverNow: now, durationMinutes: exam.durationMinutes, examTitle: exam.title };
   if (a.status !== 'in_progress') return { ...base, submittedAt: a.submittedAt };
-  return { ...base, instructions: exam.instructions, questions: exam.questions.map((q) => publicQuestion(q, a.id)), answers: a.answers };
+  return { ...base, instructions: exam.instructions, questions: seededShuffle(exam.questions, a.id + ':questions').map((q) => publicQuestion(q, a.id)), answers: a.answers };
 }
 
 async function authAttempt(c) {
@@ -656,8 +668,10 @@ async function attemptStart(c) {
   const token = randHex(24);
   const a = { id: randHex(8), examId: exam.id, examTitle: exam.title, name, studentCode, startedAt: c.now, deadline: c.now + exam.durationMinutes * 60000, status: 'in_progress', answers: {}, tokenHash: await sha256Hex(token), grading: null };
   await putAttempt(c.env, a);
-  if (ident) { ident.rec.n += 1;
-    await kvPut(c.env, ident.key, ident.rec); }
+  if (ident) {
+    ident.rec.n += 1;
+    await kvPut(c.env, ident.key, ident.rec);
+  }
   return { ok: true, token, ...attemptView(exam, a, c.now) };
 }
 
@@ -676,9 +690,11 @@ async function attemptSave(c) {
   }
   const clean = sanitizeAnswers(exam, c.body.answers);
   const changed = JSON.stringify(clean) !== JSON.stringify(a.answers);
-  if (changed) { a.answers = clean;
+  if (changed) {
+    a.answers = clean;
     a.savedAt = c.now;
-    await putAttempt(c.env, a); }
+    await putAttempt(c.env, a);
+  }
   return { ok: true, saved: changed, serverNow: c.now, deadline: a.deadline };
 }
 
@@ -717,8 +733,10 @@ async function adminSetup(c) {
   if (!c.env.SETUP_TOKEN) fail(503, 'SETUP_NOT_CONFIGURED', 'لم يتم ضبط السر SETUP_TOKEN في Cloudflare');
   const rl = await rlCheck(c.env, 'setup', c.request, c.now);
   const ok = typeof c.body.setupToken === 'string' && (await safeEqualSecret(c.body.setupToken, c.env.SETUP_TOKEN));
-  if (!ok) { await rlFail(c.env, rl);
-    fail(403, 'BAD_SETUP_TOKEN', 'رمز التهيئة غير صحيح'); }
+  if (!ok) {
+    await rlFail(c.env, rl);
+    fail(403, 'BAD_SETUP_TOKEN', 'رمز التهيئة غير صحيح');
+  }
   const existing = await kvGet(c.env, 'admin:cred');
   if (existing && c.body.reset !== true) fail(409, 'ALREADY_INITIALIZED', 'تمت التهيئة مسبقًا. لإعادة ضبط كلمة المرور أرسل reset=true مع رمز التهيئة');
   vPassword(c.body.password);
@@ -731,8 +749,10 @@ async function adminLogin(c) {
   const rl = await rlCheck(c.env, 'login', c.request, c.now);
   const cred = await kvGet(c.env, 'admin:cred');
   if (!cred) fail(409, 'NOT_INITIALIZED', 'لم تتم تهيئة كلمة مرور الإدارة بعد');
-  if (!(await verifyPassword(c.env, cred, c.body.password))) { await rlFail(c.env, rl);
-    fail(401, 'BAD_CREDENTIALS', 'كلمة المرور غير صحيحة'); }
+  if (!(await verifyPassword(c.env, cred, c.body.password))) {
+    await rlFail(c.env, rl);
+    fail(401, 'BAD_CREDENTIALS', 'كلمة المرور غير صحيحة');
+  }
   await rlClear(c.env, rl);
   const ms = sessionMs(c.env);
   const token = randHex(32);
@@ -748,8 +768,10 @@ async function adminLogout(c) {
 async function adminChangePassword(c) {
   const rl = await rlCheck(c.env, 'chpw', c.request, c.now);
   const cred = await kvGet(c.env, 'admin:cred');
-  if (!cred || !(await verifyPassword(c.env, cred, c.body.currentPassword))) { await rlFail(c.env, rl);
-    fail(403, 'BAD_CREDENTIALS', 'كلمة المرور الحالية غير صحيحة'); }
+  if (!cred || !(await verifyPassword(c.env, cred, c.body.currentPassword))) {
+    await rlFail(c.env, rl);
+    fail(403, 'BAD_CREDENTIALS', 'كلمة المرور الحالية غير صحيحة');
+  }
   vPassword(c.body.newPassword);
   await saveCred(c.env, c.body.newPassword, c.now);
   await rlClear(c.env, rl);
