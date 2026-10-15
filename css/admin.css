@@ -1,0 +1,123 @@
+/* QuizCode — إضافات خاصة بلوحة الإدارة */
+.topbar nav {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.topbar nav .btn {
+  color: #fff;
+  border-color: rgba(255, 255, 255, .45);
+  min-height: 38px;
+  padding: .2rem .8rem;
+}
+
+.topbar nav .btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .15);
+}
+
+.toolbar {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.toolbar .grow input,
+.toolbar .grow select {
+  margin: 0;
+}
+
+.exam-card h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin-top: .6rem;
+}
+
+.q-card {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: .9rem;
+  margin-bottom: .9rem;
+  background: #fbfcfd;
+}
+
+.q-head {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: .7rem;
+}
+
+.q-head .num {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.q-head .grow {
+  min-width: 160px;
+}
+
+.opt-row {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: .45rem;
+}
+
+.opt-row input[type=text] {
+  flex: 1;
+  min-width: 0;
+}
+
+.section-title {
+  margin: 1.4rem 0 .6rem;
+  padding-bottom: .3rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.answer-box {
+  background: #f4f7fa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .6rem .8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.grade-box {
+  background: var(--warn-soft);
+  border-radius: 8px;
+  padding: .7rem;
+  margin-top: .6rem;
+}
+
+.stat-row {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.stat-row b {
+  font-size: 1.15rem;
+}
+
+.sticky-save {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: .7rem 0;
+  margin-top: 1rem;
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
